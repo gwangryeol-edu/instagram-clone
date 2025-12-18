@@ -30,9 +30,11 @@ public class PostApiController {
 
     @GetMapping("/explore")
     public Slice<PostResponse> getExplore(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PageableDefault(size = 12) Pageable pageable
     ) {
-        return postService.getAllPostsPaging(pageable);
+        Long userId = (userDetails != null) ? userDetails.getId() : null;
+        return postService.getAllPostsPaging(pageable, userId);
     }
 
 }

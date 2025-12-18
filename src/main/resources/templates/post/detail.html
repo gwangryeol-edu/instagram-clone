@@ -28,18 +28,31 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text" th:text="${post.content}">게시물 내용</p>
-                    <!-- 좋아요 버튼 시작 -->
+                    <div class="d-flex align-items-center">
+                        <!-- 좋아요 버튼 시작 -->
+                        <div sec:authorize="isAuthenticated()">
+                            <form th:action="@{/posts/{id}/like(id=${post.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-link text-decoration-none p-0">
+                                    <i th:class="${post.isLiked} ? 'bi bi-heart-fill' : 'bi bi-heart' " style="font-size: 1.5rem;"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <!-- 좋아요 버튼 끝 -->
+
+                        <!-- 북마크 버튼 시작 -->
+                        <div sec:authorize="isAuthenticated()" class="ms-2">
+                             <form th:action="@{/posts/{id}/bookmark(id=${post.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-link text-decoration-none p-0">
+                                    <i th:class="${post.isBookmarked} ? 'bi bi-bookmark-fill' : 'bi bi-bookmark'" style="font-size: 1.5rem;"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <!-- 북마크 버튼 끝 -->
+                    </div>
                     <div sec:authorize="isAuthenticated()">
-                        <form th:action="@{/posts/{id}/like(id=${post.id})}" method="post">
-                            <button type="submit" class="btn btn-link text-decoration-none">
-                                <i th:class="${liked} ? 'bi bi-heart-fill' : 'bi bi-heart' "></i>
-                            </button>
-                        </form>
-                        <span><span th:text="${likeCount}"></span>명이 좋아합니다</span>
+                        <span><span th:text="${post.likeCount}"></span>명이 좋아합니다</span>
                     </div>
                     <div sec:authorize="!isAuthenticated()"></div>
-
-                    <!-- 좋아요 버튼 끝 -->
                     <p class="text-muted small" th:text="${#temporals.format(post.createdAt, 'yyyy년 MM월 dd일 HH:mm')}">
                         2024년 1월 1일 12:00
                     </p>
