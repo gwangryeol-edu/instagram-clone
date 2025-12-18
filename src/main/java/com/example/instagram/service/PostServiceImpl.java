@@ -30,6 +30,7 @@ public class PostServiceImpl implements PostService {
     private final CommentRepository commentRepository;
     private final FileService fileService;
     private final FollowRepository followRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     @Override
     @Transactional
@@ -62,24 +63,51 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostResponse getPost(Long postId) {
+    public PostResponse getPost(Long postId, Long userId) {
         Post post = findById(postId);
-        return PostResponse.from(post);
+        long likeCount = likeRepository.countByPostId(post.getId());
+        long commentCount = commentRepository.countByPostId(post.getId());
+
+        if (userId == null) {
+            return PostResponse.from(post, commentCount, likeCount, false, false);
+        }
+
+        boolean isLiked = likeRepository.existsByPostIdAndUserId(post.getId(), userId);
+        boolean isBookmarked = bookmarkRepository.existsByUserIdAndPostId(userId, post.getId());
+        return PostResponse.from(post, commentCount, likeCount, isLiked, isBookmarked);
     }
 
     @Override
-    public List<PostResponse> getAllPosts() {
+    public List<PostResponse> getAllPosts(Long userId) {
         return postRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(PostResponse::from)
+                .map(post -> {
+                    long likeCount = likeRepository.countByPostId(post.getId());
+                    long commentCount = commentRepository.countByPostId(post.getId());
+                    if (userId == null) {
+                        return PostResponse.from(post, commentCount, likeCount, false, false);
+                    }
+                    boolean isLiked = likeRepository.existsByPostIdAndUserId(post.getId(), userId);
+                    boolean isBookmarked = bookmarkRepository.existsByUserIdAndPostId(userId, post.getId());
+                    return PostResponse.from(post, commentCount, likeCount, isLiked, isBookmarked);
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<PostResponse> getPostsByUsername(String username) {
+    public List<PostResponse> getPostsByUsername(String username, Long userId) {
         User user = userService.findByUsername(username);
 
         return postRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).stream()
-                .map(PostResponse::from)
+                .map(post -> {
+                    long likeCount = likeRepository.countByPostId(post.getId());
+                    long commentCount = commentRepository.countByPostId(post.getId());
+                    if (userId == null) {
+                        return PostResponse.from(post, commentCount, likeCount, false, false);
+                    }
+                    boolean isLiked = likeRepository.existsByPostIdAndUserId(post.getId(), userId);
+                    boolean isBookmarked = bookmarkRepository.existsByUserIdAndPostId(userId, post.getId());
+                    return PostResponse.from(post, commentCount, likeCount, isLiked, isBookmarked);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -90,12 +118,17 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
-    public List<PostResponse> getAllPostsWithStats() {
+    public List<PostResponse> getAllPostsWithStats(Long userId) {
         return postRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(post -> {
                     long likeCount = likeRepository.countByPostId(post.getId());
                     long commentCount = commentRepository.countByPostId(post.getId());
-                    return PostResponse.from(post, commentCount, likeCount);
+                    if (userId == null) {
+                        return PostResponse.from(post, commentCount, likeCount, false, false);
+                    }
+                    boolean isLiked = likeRepository.existsByPostIdAndUserId(post.getId(), userId);
+                    boolean isBookmarked = bookmarkRepository.existsByUserIdAndPostId(userId, post.getId());
+                    return PostResponse.from(post, commentCount, likeCount, isLiked, isBookmarked);
                 })
                 .collect(Collectors.toList());
     }
@@ -111,7 +144,9 @@ public class PostServiceImpl implements PostService {
                 .map(post -> {
                     long likeCount = likeRepository.countByPostId(post.getId());
                     long commentCount = commentRepository.countByPostId(post.getId());
-                    return PostResponse.from(post, commentCount, likeCount);
+                    boolean isLiked = likeRepository.existsByPostIdAndUserId(post.getId(), userId);
+                    boolean isBookmarked = bookmarkRepository.existsByUserIdAndPostId(userId, post.getId());
+                    return PostResponse.from(post, commentCount, likeCount, isLiked, isBookmarked);
                 })
                 .toList();
 
@@ -121,15 +156,19 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Slice<PostResponse> getAllPostsPaging(Pageable pageable) {
+    public Slice<PostResponse> getAllPostsPaging(Pageable pageable, Long userId) {
         Slice<Post> posts = postRepository.findAllWithUserPaging(pageable);
 
         List<PostResponse> content = posts.getContent().stream()
                 .map(post -> {
                     long likeCount = likeRepository.countByPostId(post.getId());
                     long commentCount = commentRepository.countByPostId(post.getId());
-
-                    return PostResponse.from(post, commentCount, likeCount);
+                    if (userId == null) {
+                        return PostResponse.from(post, commentCount, likeCount, false, false);
+                    }
+                    boolean isLiked = likeRepository.existsByPostIdAndUserId(post.getId(), userId);
+                    boolean isBookmarked = bookmarkRepository.existsByUserIdAndPostId(userId, post.getId());
+                    return PostResponse.from(post, commentCount, likeCount, isLiked, isBookmarked);
                 })
                 .toList();
 
@@ -138,14 +177,19 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
-    public Slice<PostResponse> searchPosts(String keyword, Pageable pageable) {
+    public Slice<PostResponse> searchPosts(String keyword, Pageable pageable, Long userId) {
         Slice<Post> posts = postRepository.searchByKeyword(keyword, pageable);
 
         List<PostResponse> content = posts.getContent().stream()
                 .map(post -> {
                     long likeCount = likeRepository.countByPostId(post.getId());
                     long commentCount = commentRepository.countByPostId(post.getId());
-                    return PostResponse.from(post, commentCount, likeCount);
+                    if (userId == null) {
+                        return PostResponse.from(post, commentCount, likeCount, false, false);
+                    }
+                    boolean isLiked = likeRepository.existsByPostIdAndUserId(post.getId(), userId);
+                    boolean isBookmarked = bookmarkRepository.existsByUserIdAndPostId(userId, post.getId());
+                    return PostResponse.from(post, commentCount, likeCount, isLiked, isBookmarked);
                 })
                 .toList();
 

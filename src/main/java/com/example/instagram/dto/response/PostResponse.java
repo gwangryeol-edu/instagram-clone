@@ -23,6 +23,9 @@ public class PostResponse {
     private long commentCount;
     private long likeCount;
 
+    private boolean isLiked;
+    private boolean isBookmarked;
+
     // Entity => DTO 변환
     public static PostResponse from(Post post) {
         return PostResponse.builder()
@@ -35,6 +38,8 @@ public class PostResponse {
                 .profileImageUrl(post.getUser().getProfileImageUrl())
                 .likeCount(0)
                 .commentCount(0)
+                .isLiked(false)
+                .isBookmarked(false)
                 .build();
     }
 
@@ -50,6 +55,24 @@ public class PostResponse {
                 .profileImageUrl(post.getUser().getProfileImageUrl())
                 .likeCount(likeCount)
                 .commentCount(commentCount)
+                .isLiked(false)
+                .isBookmarked(false)
+                .build();
+    }
+
+    public static PostResponse from(Post post, long commentCount, long likeCount, boolean isLiked, boolean isBookmarked) {
+        return PostResponse.builder()
+                .id(post.getId())
+                .content(post.getContent())
+                .createdAt(post.getCreatedAt())
+                .imageUrl(post.getImageUrl())
+                .userId(post.getUser().getId())
+                .username(post.getUser().getUsername())
+                .profileImageUrl(post.getUser().getProfileImageUrl())
+                .likeCount(likeCount)
+                .commentCount(commentCount)
+                .isLiked(isLiked)
+                .isBookmarked(isBookmarked)
                 .build();
     }
 }

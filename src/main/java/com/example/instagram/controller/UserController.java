@@ -36,7 +36,7 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         ProfileResponse profile = userService.getProfile(username);
-        List<PostResponse> posts = postService.getPostsByUsername(username);
+        List<PostResponse> posts = postService.getPostsByUsername(username, userDetails.getId());
 
         model.addAttribute("profile", profile);
         model.addAttribute("posts", posts);
