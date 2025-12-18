@@ -50,8 +50,8 @@ public class PostServiceImpl implements PostService {
                 .imageUrl(imageUrl)
                 .build();
 
-        Post savedPos = postRepository.save(post);
-        return PostResponse.from(savedPos);
+        Post savedPost = postRepository.save(post);
+        return PostResponse.from(savedPost);
 
     }
 
@@ -107,7 +107,7 @@ public class PostServiceImpl implements PostService {
 
         Slice<Post> posts = postRepository.findFeedPostsByUserIds(followingIds, pageable);
 
-        List<PostResponse> content = posts.getContent().stream()
+        List<PostResponse> postResponses = posts.getContent().stream()
                 .map(post -> {
                     long likeCount = likeRepository.countByPostId(post.getId());
                     long commentCount = commentRepository.countByPostId(post.getId());
@@ -115,7 +115,7 @@ public class PostServiceImpl implements PostService {
                 })
                 .toList();
 
-        return new SliceImpl<>(content, pageable, posts.hasNext());
+        return new SliceImpl<>(postResponses, pageable, posts.hasNext());
 
 
     }
